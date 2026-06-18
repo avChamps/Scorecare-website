@@ -3,8 +3,8 @@
 import { type ChangeEvent, type FormEvent, useState } from "react";
 import Image from "next/image";
 import { IconRosetteDiscountCheck } from "@tabler/icons-react";
-import appleStoreLogo from "../assets/apple-store-logo.svg";
-import googlePlayLogo from "../assets/Google-Play-Logo.jpg";
+import appleStoreLogo from "../assets/apple-store-badge.png";
+import googlePlayLogo from "../assets/google-play-badge.png";
 import scorecareLogo from "../assets/scorecare-logo.png";
 
 const navLinks = [
@@ -266,24 +266,31 @@ export default function Home() {
         </a>
         <button
           onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
-          className="flex flex-col gap-1.5 lg:hidden"
+          className="group flex size-10 items-center justify-center lg:hidden"
           aria-label="Open menu"
           aria-expanded={isMobileMenuOpen}
           type="button"
         >
-          <span className="h-0.5 w-6 rounded bg-[#1B3A57]" />
-          <span className="h-0.5 w-6 rounded bg-[#1B3A57]" />
-          <span className="h-0.5 w-6 rounded bg-[#1B3A57]" />
+          <span className="relative h-5 w-6">
+            <span className={`absolute left-0 top-0 h-0.5 w-6 rounded bg-[#1B3A57] transition duration-300 ease-out ${isMobileMenuOpen ? "translate-y-[9px] rotate-45" : ""}`} />
+            <span className={`absolute left-0 top-[9px] h-0.5 w-6 rounded bg-[#1B3A57] transition duration-200 ease-out ${isMobileMenuOpen ? "opacity-0" : ""}`} />
+            <span className={`absolute left-0 top-[18px] h-0.5 w-6 rounded bg-[#1B3A57] transition duration-300 ease-out ${isMobileMenuOpen ? "-translate-y-[9px] -rotate-45" : ""}`} />
+          </span>
         </button>
-        {isMobileMenuOpen ? (
-          <div className="absolute left-5 right-5 top-[72px] rounded-2xl border border-[#EEF2F6] bg-white p-4 shadow-[0_16px_48px_rgba(27,58,87,0.16)] lg:hidden">
+        <div
+          className={`absolute left-5 right-5 top-[72px] origin-top rounded-2xl border border-[#EEF2F6] bg-white p-4 shadow-[0_16px_48px_rgba(27,58,87,0.16)] transition duration-300 ease-out lg:hidden ${
+            isMobileMenuOpen ? "pointer-events-auto translate-y-0 scale-100 opacity-100" : "pointer-events-none -translate-y-3 scale-95 opacity-0"
+          }`}
+        >
             <div className="grid gap-1">
               {navLinks.map(([label, href]) => (
                 <a
                   key={label}
                   href={href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="rounded-xl px-3 py-3 text-sm font-bold text-[#1B3A57] transition hover:bg-[#E6FAF5] hover:text-[#2EC4A0]"
+                  className={`rounded-xl px-3 py-3 text-sm font-bold text-[#1B3A57] transition duration-300 hover:bg-[#E6FAF5] hover:text-[#2EC4A0] ${
+                    isMobileMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
+                  }`}
                 >
                   {label}
                 </a>
@@ -291,13 +298,14 @@ export default function Home() {
               <a
                 href={playStoreUrl}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="mt-2 rounded-full bg-[#2EC4A0] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#20A882]"
+                className={`mt-2 rounded-full bg-[#2EC4A0] px-5 py-3 text-center text-sm font-black text-white transition duration-300 hover:bg-[#20A882] ${
+                  isMobileMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
+                }`}
               >
                 Download App
               </a>
             </div>
           </div>
-        ) : null}
       </nav>
 
       <section className="relative grid min-h-[calc(100vh-72px)] items-center gap-12 overflow-hidden bg-[linear-gradient(135deg,#1B3A57_0%,#254D6E_60%,#1B3A57_100%)] px-5 py-16 md:px-10 lg:grid-cols-[1fr_420px] lg:px-[5%] lg:py-24">
@@ -360,10 +368,10 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 border-b border-[#EEF2F6] bg-[#F8FAFB] px-5 py-6 text-center text-sm font-semibold text-[#3D5066] md:px-10 lg:px-[5%]">
+      <section className="grid gap-4 border-b border-[#EEF2F6] bg-[#F8FAFB] px-5 py-6 text-sm font-semibold text-[#3D5066] sm:grid-cols-2 md:px-10 lg:flex lg:flex-wrap lg:items-center lg:justify-center lg:gap-x-10 lg:gap-y-4 lg:px-[5%]">
         {trustItems.map((item) => (
-          <div key={item} className="flex items-center gap-2">
-            <span className="grid size-5 place-items-center rounded-full bg-[#2EC4A0] text-xs text-white">✓</span>
+          <div key={item} className="flex items-center gap-3">
+            <span className="grid size-5 shrink-0 place-items-center rounded-full bg-[#2EC4A0] text-xs text-white">✓</span>
             {item}
           </div>
         ))}
@@ -375,11 +383,11 @@ export default function Home() {
           <p className="mt-2 text-sm text-white/60">Available on Android and iOS. Free to download, forever free to use.</p>
         </div>
         <div className="flex flex-col gap-4 sm:flex-row">
-          <a href={playStoreUrl} aria-label="Download on the App Store" className="flex h-14 w-44 items-center justify-center overflow-hidden rounded-2xl bg-black transition hover:-translate-y-0.5">
-            <Image src={appleStoreLogo} alt="Download on the App Store" className="h-full w-full scale-[3.25] object-contain" />
+          <a href={playStoreUrl} aria-label="Download on the App Store" className="flex h-14 w-44 items-center justify-center transition hover:-translate-y-0.5">
+            <Image src={appleStoreLogo} alt="Download on the App Store" className="h-14 w-44 object-contain" />
           </a>
-          <a href={playStoreUrl} aria-label="Get it on Google Play" className="flex h-14 w-44 items-center justify-center overflow-hidden rounded-2xl bg-white px-3 transition hover:-translate-y-0.5">
-            <Image src={googlePlayLogo} alt="Get it on Google Play" className="h-10 w-full object-contain" />
+          <a href={playStoreUrl} aria-label="Get it on Google Play" className="flex h-14 w-44 items-center justify-center transition hover:-translate-y-0.5">
+            <Image src={googlePlayLogo} alt="Get it on Google Play" className="h-14 w-44 object-contain" />
           </a>
         </div>
       </section>
