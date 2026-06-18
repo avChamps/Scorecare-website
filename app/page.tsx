@@ -1,4 +1,8 @@
+"use client";
+
+import { type ChangeEvent, type FormEvent, useState } from "react";
 import Image from "next/image";
+import { IconRosetteDiscountCheck } from "@tabler/icons-react";
 import appleStoreLogo from "../assets/apple-store-logo.svg";
 import googlePlayLogo from "../assets/Google-Play-Logo.jpg";
 import scorecareLogo from "../assets/scorecare-logo.png";
@@ -65,6 +69,36 @@ const faqs = [
   ["What is a good credit score in India?", "In India, a score of 750 and above is considered excellent for loans and credit card offers."],
 ];
 
+type ContactFormValues = {
+  firstName: string;
+  lastName: string;
+  emailAddress: string;
+  message: string;
+};
+
+const initialContactFormValues: ContactFormValues = {
+  firstName: "",
+  lastName: "",
+  emailAddress: "",
+  message: "",
+};
+
+const initialContactTouched = {
+  firstName: false,
+  lastName: false,
+  emailAddress: false,
+  message: false,
+};
+
+function validateContactForm(values: ContactFormValues) {
+  return {
+    firstName: values.firstName.trim() ? "" : "First name is required.",
+    lastName: values.lastName.trim() ? "" : "Last name is required.",
+    emailAddress: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.emailAddress.trim()) ? "" : "Enter a valid email address.",
+    message: values.message.trim().length >= 10 ? "" : "Message must be at least 10 characters.",
+  };
+}
+
 function SectionHeading({
   eyebrow,
   title,
@@ -128,6 +162,84 @@ function ContactIcon({ type }: { type: string }) {
 }
 
 export default function Home() {
+  const [contactForm, setContactForm] = useState(initialContactFormValues);
+  const [contactErrors, setContactErrors] = useState(validateContactForm(initialContactFormValues));
+  const [contactTouched, setContactTouched] = useState(initialContactTouched);
+  const [isContactSubmitting, setIsContactSubmitting] = useState(false);
+  const [showContactSuccess, setShowContactSuccess] = useState(false);
+  const isContactFormValid = Object.values(contactErrors).every((error) => !error);
+
+  function handleContactChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    const { name, value } = event.target;
+    const nextForm = {
+      ...contactForm,
+      [name]: value,
+    };
+
+    setContactForm(nextForm);
+    setContactErrors(validateContactForm(nextForm));
+    setContactTouched((currentTouched) => ({
+      ...currentTouched,
+      [name]: true,
+    }));
+  }
+
+  async function handleContactSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const nextErrors = validateContactForm(contactForm);
+
+    setContactErrors(nextErrors);
+    setContactTouched({
+      firstName: true,
+      lastName: true,
+      emailAddress: true,
+      message: true,
+    });
+
+    if (Object.values(nextErrors).some((error) => error)) {
+      return;
+    }
+
+    setIsContactSubmitting(true);
+
+    try {
+      const response = await fetch("https://scorecareapp.com/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName: contactForm.firstName.trim(),
+          lastName: contactForm.lastName.trim(),
+          emailAddress: contactForm.emailAddress.trim(),
+          message: contactForm.message.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Contact request failed");
+      }
+
+      form.reset();
+      setContactForm(initialContactFormValues);
+      setContactErrors(validateContactForm(initialContactFormValues));
+      setContactTouched(initialContactTouched);
+      setShowContactSuccess(true);
+    } catch {
+      alert("Unable to submit your message right now. Please try again.");
+    } finally {
+      setIsContactSubmitting(false);
+    }
+  }
+
+  function contactInputClass(field: keyof ContactFormValues) {
+    return `mt-2 w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition focus:border-[#2EC4A0] ${
+      contactTouched[field] && contactErrors[field] ? "border-[#FF5B5B]" : "border-[#D6DFE8]"
+    }`;
+  }
+
   return (
     <main className="min-h-screen overflow-x-hidden bg-white text-[#1B3A57]">
       <nav className="sticky top-0 z-50 flex h-[72px] items-center justify-between border-b border-[#EEF2F6] bg-white/95 px-5 backdrop-blur md:px-10 lg:px-[5%]">
@@ -395,32 +507,51 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <form className="rounded-3xl border border-[#EEF2F6] bg-[#F8FAFB] p-6 sm:p-8">
+          <form onSubmit={handleContactSubmit} className="rounded-3xl border border-[#EEF2F6] bg-[#F8FAFB] p-6 sm:p-8">
             <h3 className="font-heading text-2xl font-extrabold text-[#1B3A57]">Send us a message</h3>
             <div className="mt-7 grid gap-4 sm:grid-cols-2">
               <label className="text-sm font-bold text-[#1B3A57]">
                 First Name
-                <input className="mt-2 w-full rounded-xl border border-[#D6DFE8] bg-white px-4 py-3 text-sm outline-none focus:border-[#2EC4A0]" type="text" placeholder="Rahul" />
+                <input name="firstName" value={contactForm.firstName} onChange={handleContactChange} className={contactInputClass("firstName")} type="text" placeholder="Rahul" required aria-invalid={Boolean(contactTouched.firstName && contactErrors.firstName)} />
+                {contactTouched.firstName && contactErrors.firstName ? <p className="mt-1 text-xs font-semibold text-[#FF5B5B]">{contactErrors.firstName}</p> : null}
               </label>
               <label className="text-sm font-bold text-[#1B3A57]">
                 Last Name
-                <input className="mt-2 w-full rounded-xl border border-[#D6DFE8] bg-white px-4 py-3 text-sm outline-none focus:border-[#2EC4A0]" type="text" placeholder="Sharma" />
+                <input name="lastName" value={contactForm.lastName} onChange={handleContactChange} className={contactInputClass("lastName")} type="text" placeholder="Sharma" required aria-invalid={Boolean(contactTouched.lastName && contactErrors.lastName)} />
+                {contactTouched.lastName && contactErrors.lastName ? <p className="mt-1 text-xs font-semibold text-[#FF5B5B]">{contactErrors.lastName}</p> : null}
               </label>
             </div>
             <label className="mt-4 block text-sm font-bold text-[#1B3A57]">
               Email Address
-              <input className="mt-2 w-full rounded-xl border border-[#D6DFE8] bg-white px-4 py-3 text-sm outline-none focus:border-[#2EC4A0]" type="email" placeholder="rahul@email.com" />
+              <input name="emailAddress" value={contactForm.emailAddress} onChange={handleContactChange} className={contactInputClass("emailAddress")} type="email" placeholder="rahul@email.com" required aria-invalid={Boolean(contactTouched.emailAddress && contactErrors.emailAddress)} />
+              {contactTouched.emailAddress && contactErrors.emailAddress ? <p className="mt-1 text-xs font-semibold text-[#FF5B5B]">{contactErrors.emailAddress}</p> : null}
             </label>
             <label className="mt-4 block text-sm font-bold text-[#1B3A57]">
               Message
-              <textarea className="mt-2 min-h-28 w-full resize-y rounded-xl border border-[#D6DFE8] bg-white px-4 py-3 text-sm outline-none focus:border-[#2EC4A0]" placeholder="Tell us how we can help you..." />
+              <textarea name="message" value={contactForm.message} onChange={handleContactChange} className={`${contactInputClass("message")} min-h-28 resize-y`} placeholder="Tell us how we can help you..." required aria-invalid={Boolean(contactTouched.message && contactErrors.message)} />
+              {contactTouched.message && contactErrors.message ? <p className="mt-1 text-xs font-semibold text-[#FF5B5B]">{contactErrors.message}</p> : null}
             </label>
-            <button className="mt-5 w-full rounded-full bg-[#2EC4A0] px-6 py-4 text-sm font-black text-white transition hover:bg-[#20A882]" type="submit">
-              Send Message
+            <button disabled={isContactSubmitting || !isContactFormValid} className="mt-5 w-full rounded-full bg-[#2EC4A0] px-6 py-4 text-sm font-black text-white transition hover:bg-[#20A882] disabled:cursor-not-allowed disabled:opacity-70" type="submit">
+              {isContactSubmitting ? "Sending..." : "Send Message"}
             </button>
           </form>
         </div>
       </section>
+
+      {showContactSuccess ? (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-[#1B3A57]/55 px-5 backdrop-blur-sm" role="dialog" aria-modal="true">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-7 text-center shadow-[0_24px_80px_rgba(27,58,87,0.28)]">
+            <div className="mx-auto grid size-16 place-items-center rounded-full bg-[#E6FAF5] text-3xl text-[#2EC4A0]">
+              <IconRosetteDiscountCheck size={34} stroke={2.2} />
+            </div>
+            <h3 className="mt-5 font-heading text-2xl font-extrabold text-[#1B3A57]">Thank you for contacting us</h3>
+            <p className="mt-3 text-sm leading-6 text-[#6B7F94]">We received your message and our team will get back to you shortly.</p>
+            <button onClick={() => setShowContactSuccess(false)} className="mt-6 w-full rounded-full bg-[#2EC4A0] px-6 py-3 text-sm font-black text-white transition hover:bg-[#20A882]" type="button">
+              Close
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <footer className="bg-[#1B3A57] px-5 py-12 text-white/65 md:px-10 lg:px-[5%]">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
