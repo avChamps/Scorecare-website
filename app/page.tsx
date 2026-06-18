@@ -162,6 +162,7 @@ function ContactIcon({ type }: { type: string }) {
 }
 
 export default function Home() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [contactForm, setContactForm] = useState(initialContactFormValues);
   const [contactErrors, setContactErrors] = useState(validateContactForm(initialContactFormValues));
   const [contactTouched, setContactTouched] = useState(initialContactTouched);
@@ -263,11 +264,40 @@ export default function Home() {
         <a href={playStoreUrl} className="hidden rounded-full bg-[#2EC4A0] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#20A882] sm:inline-flex">
           Download App
         </a>
-        <button className="flex flex-col gap-1.5 lg:hidden" aria-label="Open menu">
+        <button
+          onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
+          className="flex flex-col gap-1.5 lg:hidden"
+          aria-label="Open menu"
+          aria-expanded={isMobileMenuOpen}
+          type="button"
+        >
           <span className="h-0.5 w-6 rounded bg-[#1B3A57]" />
           <span className="h-0.5 w-6 rounded bg-[#1B3A57]" />
           <span className="h-0.5 w-6 rounded bg-[#1B3A57]" />
         </button>
+        {isMobileMenuOpen ? (
+          <div className="absolute left-5 right-5 top-[72px] rounded-2xl border border-[#EEF2F6] bg-white p-4 shadow-[0_16px_48px_rgba(27,58,87,0.16)] lg:hidden">
+            <div className="grid gap-1">
+              {navLinks.map(([label, href]) => (
+                <a
+                  key={label}
+                  href={href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="rounded-xl px-3 py-3 text-sm font-bold text-[#1B3A57] transition hover:bg-[#E6FAF5] hover:text-[#2EC4A0]"
+                >
+                  {label}
+                </a>
+              ))}
+              <a
+                href={playStoreUrl}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="mt-2 rounded-full bg-[#2EC4A0] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#20A882]"
+              >
+                Download App
+              </a>
+            </div>
+          </div>
+        ) : null}
       </nav>
 
       <section className="relative grid min-h-[calc(100vh-72px)] items-center gap-12 overflow-hidden bg-[linear-gradient(135deg,#1B3A57_0%,#254D6E_60%,#1B3A57_100%)] px-5 py-16 md:px-10 lg:grid-cols-[1fr_420px] lg:px-[5%] lg:py-24">
@@ -553,26 +583,26 @@ export default function Home() {
         </div>
       ) : null}
 
-      <footer className="bg-[#1B3A57] px-5 py-12 text-white/65 md:px-10 lg:px-[5%]">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
-          <div>
+      <footer className="bg-[#1B3A57] px-5 py-10 text-white/65 md:px-10 lg:px-[5%]">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-9 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
+          <div className="col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3 text-white">
-              <span className="flex h-16 w-48 items-center overflow-hidden rounded-xl bg-white">
+              <span className="flex h-14 w-40 items-center overflow-hidden rounded-xl bg-white">
                 <Image
                   src={scorecareLogo}
                   alt="ScoreCare"
-                  className="h-11 w-48 scale-[2.05] object-contain"
+                  className="h-10 w-40 scale-[2.05] object-contain"
                 />
               </span>
             </div>
-            <p className="mt-4 max-w-sm text-sm leading-7 text-white/55">ScoreCare by Scoresathi Technologies, helping every Indian understand, monitor, and improve their credit score.</p>
+            <p className="mt-4 max-w-sm text-sm leading-6 text-white/55">ScoreCare by Scoresathi Technologies, helping every Indian understand, monitor, and improve their credit score.</p>
           </div>
           {[
             ["Product", ["Credit Score", "Features", "Download App"]],
             ["Company", ["About Us", "Contact", "Careers"]],
             ["Legal", ["Privacy Policy", "Terms of Service", "Disclaimer"]],
           ].map(([title, links]) => (
-            <div key={title as string}>
+            <div key={title as string} className="min-w-0">
               <h4 className="mb-4 text-xs font-black uppercase tracking-widest text-white">{title}</h4>
               <ul className="space-y-3 text-sm">
                 {(links as string[]).map((link) => (
@@ -584,7 +614,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-        <div className="mt-10 flex flex-col gap-3 border-t border-white/10 pt-7 text-xs text-white/45 md:flex-row md:items-center md:justify-between">
+        <div className="mt-9 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs leading-5 text-white/45 md:flex-row md:items-center md:justify-between">
           <p>© 2026 Scoresathi Technologies Pvt. Ltd. All rights reserved.</p>
           <p>Integrated with Experian & CRIF High Mark.</p>
         </div>
