@@ -525,25 +525,37 @@ export default function Home() {
         <div className="mt-12 grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
           <div className="space-y-7">
             {[
-              ["email", "Email Us", "support@scorecareapp.com", "partnerships@scorecareapp.com"],
-              ["phone", "Call Us", "+91 7799440408", "Mon-Sat, 9am - 6pm IST"],
+              ["email", "Email Us", "support@scorecareapp.com", "partnerships@scorecareapp.com", "mailto:support@scorecareapp.com"],
+              ["phone", "Call Us", "+91 7799440408", "Mon-Sat, 9am - 6pm IST", "tel:+917799440408"],
               ["whatsapp", "WhatsApp Support", "Message us on WhatsApp for quick help.", ""],
               ["address", "Office Address", "Scoresathi Technologies Pvt. Ltd., Hyderabad, Telangana, India", ""],
-            ].map(([type, title, lineOne, lineTwo]) => (
-              <div key={title} className="group flex gap-4 rounded-2xl transition duration-300 hover:translate-x-1">
-                <div className="relative grid size-12 shrink-0 place-items-center rounded-2xl bg-[#E6FAF5] text-[#2EC4A0] shadow-[0_10px_24px_rgba(46,196,160,0.12)] transition duration-300 group-hover:bg-[#2EC4A0] group-hover:text-white">
-                  <span className="absolute inset-0 rounded-2xl bg-[#2EC4A0]/20 opacity-0 transition group-hover:animate-ping group-hover:opacity-60" />
-                  <span className="relative">
-                    <ContactIcon type={type} />
-                  </span>
+            ].map(([type, title, lineOne, lineTwo, href]) => {
+              const content = (
+                <>
+                  <div className="relative grid size-12 shrink-0 place-items-center rounded-2xl bg-[#E6FAF5] text-[#2EC4A0] shadow-[0_10px_24px_rgba(46,196,160,0.12)] transition duration-300 group-hover:bg-[#2EC4A0] group-hover:text-white">
+                    <span className="absolute inset-0 rounded-2xl bg-[#2EC4A0]/20 opacity-0 transition group-hover:animate-ping group-hover:opacity-60" />
+                    <span className="relative">
+                      <ContactIcon type={type} />
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="font-black text-[#1B3A57]">{title}</h4>
+                    <p className="mt-1 text-sm leading-6 text-[#6B7F94]">{lineOne}</p>
+                    {lineTwo ? <p className="text-sm leading-6 text-[#6B7F94]">{lineTwo}</p> : null}
+                  </div>
+                </>
+              );
+
+              return href ? (
+                <a key={title} href={href} className="group flex gap-4 rounded-2xl transition duration-300 hover:translate-x-1">
+                  {content}
+                </a>
+              ) : (
+                <div key={title} className="group flex gap-4 rounded-2xl transition duration-300 hover:translate-x-1">
+                  {content}
                 </div>
-                <div>
-                  <h4 className="font-black text-[#1B3A57]">{title}</h4>
-                  <p className="mt-1 text-sm leading-6 text-[#6B7F94]">{lineOne}</p>
-                  {lineTwo ? <p className="text-sm leading-6 text-[#6B7F94]">{lineTwo}</p> : null}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <form onSubmit={handleContactSubmit} className="rounded-3xl border border-[#EEF2F6] bg-[#F8FAFB] p-6 sm:p-8">
             <h3 className="font-heading text-2xl font-extrabold text-[#1B3A57]">Send us a message</h3>
