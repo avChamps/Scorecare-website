@@ -2,6 +2,7 @@
 
 import { type ChangeEvent, type FormEvent, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { IconRosetteDiscountCheck } from "@tabler/icons-react";
 import appleStoreLogo from "../assets/apple-store-badge.png";
 import googlePlayLogo from "../assets/google-play-badge.png";
@@ -627,7 +628,11 @@ export default function Home() {
               <ul className="space-y-3 text-sm">
                 {(links as string[]).map((link) => (
                   <li key={link}>
-                    <a href="#" className="transition hover:text-[#2EC4A0]">{link}</a>
+                    {link === "Privacy Policy" ? (
+                      <Link href="/privacy-policy" className="transition hover:text-[#2EC4A0]">{link}</Link>
+                    ) : (
+                      <a href="#" className="transition hover:text-[#2EC4A0]">{link}</a>
+                    )}
                   </li>
                 ))}
               </ul>
