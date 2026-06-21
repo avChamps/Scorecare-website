@@ -768,7 +768,7 @@ export default function PrivacyPolicyPage() {
           {[
             ["Product", [["Credit Score", "/#credit-score"], ["Features", "/#benefits"], ["Download App", PLAY_STORE_URL]]],
             ["Company", [["About Us", "/#about"], ["Contact", "/#contact"], ["Careers", "/#contact"]]],
-            ["Legal", [["Privacy Policy", "/privacy-policy"], ["Terms of Service", "/#policies"], ["Disclaimer", "/#policies"]]],
+            ["Legal", [["Privacy Policy", "/privacy-policy"], ["Terms of Service", "/terms-and-conditions"], ["Disclaimer", "/#policies"], ["Account Deletion", "/account-deletion"]]],
           ].map(([title, links]) => (
             <div key={title as string} className="min-w-0">
               <h4 className="mb-4 text-xs font-black uppercase tracking-widest text-white">

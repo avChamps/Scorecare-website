@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 
 export default function PrivacyPolicyNav({
   sections,
+  ariaLabel = "Privacy policy sections",
 }: {
   sections: string[][];
+  ariaLabel?: string;
 }) {
   const [activeSection, setActiveSection] = useState(sections[0][0]);
 
@@ -50,7 +52,7 @@ export default function PrivacyPolicyNav({
   }, [sections]);
 
   return (
-    <nav aria-label="Privacy policy sections">
+    <nav aria-label={ariaLabel}>
       <ol className="space-y-1.5">
         {sections.map(([id, title], index) => {
           const isActive = activeSection === id;

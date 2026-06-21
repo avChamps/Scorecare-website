@@ -2,6 +2,7 @@
 
 import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { IconRosetteDiscountCheck } from "@tabler/icons-react";
 import appleStoreLogo from "../assets/apple-store-badge.png";
 import googlePlayLogo from "../assets/google-play-badge.png";
@@ -57,6 +58,12 @@ const policies = [
   ["Disclaimer", "ScoreCare is an education and monitoring platform. Results vary by credit profile."],
   ["Data Sharing Policy", "Data is shared only with RBI-authorized bureaus to fetch your credit report."],
 ];
+
+const policyRoutes: Record<string, string> = {
+  "Privacy Policy": "/privacy-policy",
+  "Terms of Service": "/terms-and-conditions",
+  "Account Deletion": "/account-deletion",
+};
 
 const faqs = [
   ["Is checking my credit score on ScoreCare free?", "Yes, checking your credit score on ScoreCare is always free and does not affect your credit score."],
@@ -539,14 +546,12 @@ export default function Home() {
             <div key={title} className="rounded-3xl border border-[#EEF2F6] bg-white p-7 transition hover:border-[#2EC4A0] hover:shadow-[0_4px_24px_rgba(27,58,87,0.10)]">
               <h3 className="font-heading text-lg font-extrabold text-[#1B3A57]">{title}</h3>
               <p className="mt-3 text-sm leading-7 text-[#6B7F94]">{copy}</p>
-              <a
-                href={title === "Privacy Policy" ? "/privacy-policy" : "#"}
-                target={title === "Privacy Policy" ? "_blank" : undefined}
-                rel={title === "Privacy Policy" ? "noopener noreferrer" : undefined}
+              <Link
+                href={policyRoutes[title] ?? "#"}
                 className="mt-4 inline-block text-sm font-bold text-[#2EC4A0]"
               >
                 Read More
-              </a>
+              </Link>
             </div>
           ))}
         </div>
@@ -667,15 +672,15 @@ export default function Home() {
           {[
             ["Product", ["Credit Score", "Features", "Download App"]],
             ["Company", ["About Us", "Contact", "Careers"]],
-            ["Legal", ["Privacy Policy", "Terms of Service", "Disclaimer"]],
+            ["Legal", ["Privacy Policy", "Terms of Service", "Disclaimer", "Account Deletion"]],
           ].map(([title, links]) => (
             <div key={title as string} className="min-w-0">
               <h4 className="mb-4 text-xs font-black uppercase tracking-widest text-white">{title}</h4>
               <ul className="space-y-3 text-sm">
                 {(links as string[]).map((link) => (
                   <li key={link}>
-                    {link === "Privacy Policy" ? (
-                      <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="transition hover:text-[#2EC4A0]">{link}</a>
+                    {policyRoutes[link] ? (
+                      <Link href={policyRoutes[link]} className="transition hover:text-[#2EC4A0]">{link}</Link>
                     ) : (
                       <a href="#" className="transition hover:text-[#2EC4A0]">{link}</a>
                     )}
