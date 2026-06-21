@@ -1,12 +1,12 @@
 "use client";
 
-import { type ChangeEvent, type FormEvent, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { IconRosetteDiscountCheck } from "@tabler/icons-react";
 import appleStoreLogo from "../assets/apple-store-badge.png";
 import googlePlayLogo from "../assets/google-play-badge.png";
 import scorecareLogo from "../assets/scorecare-logo.png";
+import { API_BASE_URL, PLAY_STORE_URL } from "./api/api";
 
 const navLinks = [
   ["About", "#about"],
@@ -15,9 +15,6 @@ const navLinks = [
   ["Policies", "#policies"],
   ["Contact", "#contact"],
 ];
-
-const playStoreUrl =
-  "https://play.google.com/apps/internaltest/4701307504694712853";
 
 const trustItems = [
   "RBI Compliant",
@@ -75,6 +72,16 @@ type ContactFormValues = {
   lastName: string;
   emailAddress: string;
   message: string;
+};
+
+type WebsiteSettingsResponse = {
+  status: string;
+  data?: {
+    privacyPolicy?: string;
+    termsOfService?: string;
+    disclaimer?: string;
+    updatedAt?: string;
+  };
 };
 
 const initialContactFormValues: ContactFormValues = {
@@ -171,6 +178,38 @@ export default function Home() {
   const [showContactSuccess, setShowContactSuccess] = useState(false);
   const isContactFormValid = Object.values(contactErrors).every((error) => !error);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadWebsiteSettings() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/website-settings`, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("Unable to load website settings");
+        }
+
+        const result = (await response.json()) as WebsiteSettingsResponse;
+
+        if (result.status !== "success") {
+          throw new Error("Unable to load website settings");
+        }
+
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          return;
+        }
+      }
+    }
+
+    void loadWebsiteSettings();
+
+    return () => controller.abort();
+  }, []);
+
   function handleContactChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = event.target;
     const nextForm = {
@@ -207,7 +246,7 @@ export default function Home() {
     setIsContactSubmitting(true);
 
     try {
-      const response = await fetch("https://scorecareapp.com/api/contact", {
+      const response = await fetch(`${API_BASE_URL}/contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -262,7 +301,7 @@ export default function Home() {
             </a>
           ))}
         </div>
-        <a href={playStoreUrl} className="hidden rounded-full bg-[#2EC4A0] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#20A882] sm:inline-flex">
+        <a href={PLAY_STORE_URL} className="hidden rounded-full bg-[#2EC4A0] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#20A882] sm:inline-flex">
           Download App
         </a>
         <button
@@ -297,7 +336,7 @@ export default function Home() {
                 </a>
               ))}
               <a
-                href={playStoreUrl}
+                href={PLAY_STORE_URL}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`mt-2 rounded-full bg-[#2EC4A0] px-5 py-3 text-center text-sm font-black text-white transition duration-300 hover:bg-[#20A882] ${
                   isMobileMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
@@ -325,7 +364,7 @@ export default function Home() {
             ScoreCare by Scoresathi Technologies gives you free access to your credit score, expert insights, and a personalised roadmap to reach 750+.
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <a href={playStoreUrl} className="inline-flex items-center justify-center rounded-full bg-[#2EC4A0] px-7 py-4 text-sm font-black text-white shadow-[0_4px_20px_rgba(46,196,160,0.4)] transition hover:-translate-y-0.5 hover:bg-[#20A882]">
+            <a href={PLAY_STORE_URL} className="inline-flex items-center justify-center rounded-full bg-[#2EC4A0] px-7 py-4 text-sm font-black text-white shadow-[0_4px_20px_rgba(46,196,160,0.4)] transition hover:-translate-y-0.5 hover:bg-[#20A882]">
               Download Free
             </a>
             <a href="#credit-score" className="inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 px-7 py-4 text-sm font-bold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15">
@@ -384,10 +423,10 @@ export default function Home() {
           <p className="mt-2 text-sm text-white/60">Available on Android and iOS. Free to download, forever free to use.</p>
         </div>
         <div className="flex flex-col gap-4 sm:flex-row">
-          <a href={playStoreUrl} aria-label="Download on the App Store" className="flex h-14 w-44 items-center justify-center transition hover:-translate-y-0.5">
+          <a href={PLAY_STORE_URL} aria-label="Download on the App Store" className="flex h-14 w-44 items-center justify-center transition hover:-translate-y-0.5">
             <Image src={appleStoreLogo} alt="Download on the App Store" className="h-14 w-44 object-contain" />
           </a>
-          <a href={playStoreUrl} aria-label="Get it on Google Play" className="flex h-14 w-44 items-center justify-center transition hover:-translate-y-0.5">
+          <a href={PLAY_STORE_URL} aria-label="Get it on Google Play" className="flex h-14 w-44 items-center justify-center transition hover:-translate-y-0.5">
             <Image src={googlePlayLogo} alt="Get it on Google Play" className="h-14 w-44 object-contain" />
           </a>
         </div>
@@ -474,7 +513,7 @@ export default function Home() {
               ))}
             </ul>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <a href={playStoreUrl} className="rounded-full bg-[#2EC4A0] px-7 py-4 text-center text-sm font-black text-white">Get Started Free</a>
+              <a href={PLAY_STORE_URL} className="rounded-full bg-[#2EC4A0] px-7 py-4 text-center text-sm font-black text-white">Get Started Free</a>
               <a href="#contact" className="rounded-full border border-white/25 bg-white/10 px-7 py-4 text-center text-sm font-bold text-white">Talk to Us</a>
             </div>
           </div>
@@ -500,7 +539,14 @@ export default function Home() {
             <div key={title} className="rounded-3xl border border-[#EEF2F6] bg-white p-7 transition hover:border-[#2EC4A0] hover:shadow-[0_4px_24px_rgba(27,58,87,0.10)]">
               <h3 className="font-heading text-lg font-extrabold text-[#1B3A57]">{title}</h3>
               <p className="mt-3 text-sm leading-7 text-[#6B7F94]">{copy}</p>
-              <a href="#" className="mt-4 inline-block text-sm font-bold text-[#2EC4A0]">Read More</a>
+              <a
+                href={title === "Privacy Policy" ? "/privacy-policy" : "#"}
+                target={title === "Privacy Policy" ? "_blank" : undefined}
+                rel={title === "Privacy Policy" ? "noopener noreferrer" : undefined}
+                className="mt-4 inline-block text-sm font-bold text-[#2EC4A0]"
+              >
+                Read More
+              </a>
             </div>
           ))}
         </div>
@@ -629,7 +675,7 @@ export default function Home() {
                 {(links as string[]).map((link) => (
                   <li key={link}>
                     {link === "Privacy Policy" ? (
-                      <Link href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="transition hover:text-[#2EC4A0]">{link}</Link>
+                      <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="transition hover:text-[#2EC4A0]">{link}</a>
                     ) : (
                       <a href="#" className="transition hover:text-[#2EC4A0]">{link}</a>
                     )}
