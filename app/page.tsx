@@ -629,7 +629,7 @@ export default function Home() {
                 {(links as string[]).map((link) => (
                   <li key={link}>
                     {link === "Privacy Policy" ? (
-                      <Link href="/privacy-policy" className="transition hover:text-[#2EC4A0]">{link}</Link>
+                      <Link href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="transition hover:text-[#2EC4A0]">{link}</Link>
                     ) : (
                       <a href="#" className="transition hover:text-[#2EC4A0]">{link}</a>
                     )}
