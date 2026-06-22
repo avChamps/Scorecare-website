@@ -56,12 +56,14 @@ const policies = [
   ["Cookie Policy", "We use essential cookies and optional analytics to improve your experience."],
   ["Refund Policy", "Core features are free. Premium subscriptions include a 7-day refund window."],
   ["Disclaimer", "ScoreCare is an education and monitoring platform. Results vary by credit profile."],
+  ["Account Deletion", "Request deletion of your ScoreCare account and associated data."],
   ["Data Sharing Policy", "Data is shared only with RBI-authorized bureaus to fetch your credit report."],
 ];
 
 const policyRoutes: Record<string, string> = {
   "Privacy Policy": "/privacy-policy",
   "Terms of Service": "/terms-and-conditions",
+  "Disclaimer": "/disclaimer",
   "Account Deletion": "/account-deletion",
 };
 
@@ -81,14 +83,20 @@ type ContactFormValues = {
   message: string;
 };
 
-type WebsiteSettingsResponse = {
+type GeneralSettings = {
+  website: string;
+  email: string;
+  mobileNumber: string;
+  whatsappNumber: string;
+  selectedLanguage: string;
+  address: string;
+  prompt_message: string;
+  updatedAt: string;
+};
+
+type GeneralSettingsResponse = {
   status: string;
-  data?: {
-    privacyPolicy?: string;
-    termsOfService?: string;
-    disclaimer?: string;
-    updatedAt?: string;
-  };
+  data?: GeneralSettings;
 };
 
 const initialContactFormValues: ContactFormValues = {
@@ -176,6 +184,12 @@ function ContactIcon({ type }: { type: string }) {
   );
 }
 
+function getWhatsappLink(value: string) {
+  const digits = value.replace(/\D/g, "");
+
+  return digits ? `https://wa.me/${digits}` : "";
+}
+
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [contactForm, setContactForm] = useState(initialContactFormValues);
@@ -183,28 +197,30 @@ export default function Home() {
   const [contactTouched, setContactTouched] = useState(initialContactTouched);
   const [isContactSubmitting, setIsContactSubmitting] = useState(false);
   const [showContactSuccess, setShowContactSuccess] = useState(false);
+  const [generalSettings, setGeneralSettings] = useState<GeneralSettings | null>(null);
   const isContactFormValid = Object.values(contactErrors).every((error) => !error);
 
   useEffect(() => {
     const controller = new AbortController();
 
-    async function loadWebsiteSettings() {
+    async function loadGeneralSettings() {
       try {
-        const response = await fetch(`${API_BASE_URL}/website-settings`, {
+        const response = await fetch(`${API_BASE_URL}/general`, {
           cache: "no-store",
           signal: controller.signal,
         });
 
         if (!response.ok) {
-          throw new Error("Unable to load website settings");
+          throw new Error("Unable to load general settings");
         }
 
-        const result = (await response.json()) as WebsiteSettingsResponse;
+        const result = (await response.json()) as GeneralSettingsResponse;
 
-        if (result.status !== "success") {
-          throw new Error("Unable to load website settings");
+        if (result.status !== "success" || !result.data) {
+          throw new Error("Unable to load general settings");
         }
 
+        setGeneralSettings(result.data);
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") {
           return;
@@ -212,7 +228,7 @@ export default function Home() {
       }
     }
 
-    void loadWebsiteSettings();
+    void loadGeneralSettings();
 
     return () => controller.abort();
   }, []);
@@ -287,6 +303,15 @@ export default function Home() {
       contactTouched[field] && contactErrors[field] ? "border-[#FF5B5B]" : "border-[#D6DFE8]"
     }`;
   }
+
+  const contactItems = generalSettings
+    ? [
+        ["email", "Email Us", generalSettings.email, "", generalSettings.email ? `mailto:${generalSettings.email}` : ""],
+        ["phone", "Call Us", generalSettings.mobileNumber, "", generalSettings.mobileNumber ? `tel:${generalSettings.mobileNumber}` : ""],
+        ["whatsapp", "WhatsApp Support", generalSettings.whatsappNumber, "", getWhatsappLink(generalSettings.whatsappNumber)],
+        ["address", "Office Address", generalSettings.address, "", ""],
+      ].filter(([, , lineOne]) => lineOne)
+    : [];
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-white text-[#1B3A57]">
@@ -573,19 +598,14 @@ export default function Home() {
       </section>
 
       <section id="contact" className="px-5 py-16 md:px-10 md:py-20 lg:px-[5%]">
-        <SectionHeading eyebrow="Get In Touch" title="Contact Us" subtitle="Have a question, need support, or want to partner with us? We would love to hear from you." center={false} />
+        <SectionHeading eyebrow="Get In Touch" title="Contact Us" subtitle={generalSettings?.prompt_message} center={false} />
         <div className="mt-12 grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
           <div className="space-y-7">
-            {[
-              ["email", "Email Us", "support@scorecareapp.com", "partnerships@scorecareapp.com", "mailto:support@scorecareapp.com"],
-              ["phone", "Call Us", "+91 7799440408", "Mon-Sat, 9am - 6pm IST", "tel:+917799440408"],
-              ["whatsapp", "WhatsApp Support", "Message us on WhatsApp for quick help.", ""],
-              ["address", "Office Address", "Scoresathi Technologies Pvt. Ltd., Hyderabad, Telangana, India", ""],
-            ].map(([type, title, lineOne, lineTwo, href]) => {
+            {contactItems.map(([type, title, lineOne, lineTwo, href]) => {
               const content = (
                 <>
-                  <div className="relative grid size-12 shrink-0 place-items-center rounded-2xl bg-[#E6FAF5] text-[#2EC4A0] shadow-[0_10px_24px_rgba(46,196,160,0.12)] transition duration-300 group-hover:bg-[#2EC4A0] group-hover:text-white">
-                    <span className="absolute inset-0 rounded-2xl bg-[#2EC4A0]/20 opacity-0 transition group-hover:animate-ping group-hover:opacity-60" />
+                  <div className="relative grid size-12 shrink-0 place-items-center rounded-full bg-[#1B3A57] text-[#63E2C4] shadow-[0_10px_24px_rgba(27,58,87,0.16)] ring-4 ring-[#E6FAF5] transition duration-300 group-hover:bg-[#2EC4A0] group-hover:text-white">
+                    <span className="absolute inset-0 rounded-full bg-[#2EC4A0]/20 opacity-0 transition group-hover:animate-ping group-hover:opacity-60" />
                     <span className="relative">
                       <ContactIcon type={type} />
                     </span>

@@ -1,25 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { API_BASE_URL } from "../api/api";
-import PrivacyPolicyNav from "../privacy-policy/privacy-policy-nav";
+import { API_BASE_URL } from "./api/api";
+import PrivacyPolicyNav from "./privacy-policy/privacy-policy-nav";
+
+type LegalDocumentKey =
+  | "privacyPolicy"
+  | "termsOfService"
+  | "disclaimer"
+  | "accountDeletion";
 
 type WebsiteSettingsResponse = {
   status: string;
-  data?: {
-    accountDeletion?: string;
+  data?: Partial<Record<LegalDocumentKey, string>> & {
+    updatedAt?: string;
   };
 };
 
-type PolicySection = {
+type LegalSection = {
   id: string;
   title: string;
   paragraphs: string[];
 };
 
-type AccountDeletionPolicy = {
+type LegalPolicy = {
   introduction: string[];
-  sections: PolicySection[];
+  sections: LegalSection[];
 };
 
 function createSectionId(title: string, index: number) {
@@ -36,7 +42,7 @@ function combineLines(lines: string[]) {
   let paragraph = "";
 
   for (const line of lines) {
-    if (/^(?:[-•●▪]|\d+[.)])\s+/.test(line)) {
+    if (/^(?:[-•●▪]|\([a-z]\)|\d+[.)])\s+/i.test(line)) {
       if (paragraph) {
         paragraphs.push(paragraph);
         paragraph = "";
@@ -61,7 +67,10 @@ function combineLines(lines: string[]) {
   return paragraphs;
 }
 
-function parsePolicyPages(pages: { text: string; height: number }[][]): AccountDeletionPolicy | null {
+function parsePdfPages(
+  pages: { text: string; height: number }[][],
+  fallbackTitle: string,
+): LegalPolicy | null {
   const lines = pages.flat().filter(({ text }) => text);
 
   if (!lines.length) {
@@ -71,14 +80,14 @@ function parsePolicyPages(pages: { text: string; height: number }[][]): AccountD
   const sortedHeights = lines.map(({ height }) => height).sort((first, second) => first - second);
   const medianHeight = sortedHeights[Math.floor(sortedHeights.length / 2)] || 1;
   const contentLines = lines.filter(
-    ({ text }, index) => !(index === 0 && /account\s+deletion/i.test(text)),
+    ({ text }, index) => !(index === 0 && text.toLowerCase().includes(fallbackTitle.toLowerCase())),
   );
   const headingIndexes = contentLines
     .map(({ text, height }, index) => {
       const isNumberedHeading = /^\d+(?:\.\d+)*[.)]?\s+[A-Za-z]/.test(text);
-      const isProminentHeading = height >= medianHeight * 1.15 && text.length <= 100;
+      const isProminentHeading = height >= medianHeight * 1.15 && text.length <= 120;
       const isUppercaseHeading =
-        text.length <= 100 && text === text.toUpperCase() && /[A-Z]{3}/.test(text);
+        text.length <= 120 && text === text.toUpperCase() && /[A-Z]{3}/.test(text);
 
       return isNumberedHeading || isProminentHeading || isUppercaseHeading ? index : -1;
     })
@@ -89,8 +98,8 @@ function parsePolicyPages(pages: { text: string; height: number }[][]): AccountD
       introduction: [],
       sections: [
         {
-          id: "account-deletion-policy",
-          title: "Account Deletion Policy",
+          id: createSectionId(fallbackTitle, 0),
+          title: fallbackTitle,
           paragraphs: combineLines(contentLines.map(({ text }) => text)),
         },
       ],
@@ -116,24 +125,31 @@ function parsePolicyPages(pages: { text: string; height: number }[][]): AccountD
   };
 }
 
-export default function AccountDeletionDocument() {
-  const [policy, setPolicy] = useState<AccountDeletionPolicy | null>(null);
+export default function LegalDocument({
+  documentKey,
+  title,
+}: {
+  documentKey: LegalDocumentKey;
+  title: string;
+}) {
+  const [policy, setPolicy] = useState<LegalPolicy | null>(null);
+  const [updatedAt, setUpdatedAt] = useState("");
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
 
-    async function loadAccountDeletionPolicy() {
+    async function loadLegalDocument() {
       try {
         const settingsResponse = await fetch(`${API_BASE_URL}/website-settings`, {
           cache: "no-store",
           signal: controller.signal,
         });
         const settings = (await settingsResponse.json()) as WebsiteSettingsResponse;
-        const pdfUrl = settings.data?.accountDeletion?.trim();
+        const pdfUrl = settings.data?.[documentKey]?.trim();
 
         if (!settingsResponse.ok || settings.status !== "success" || !pdfUrl) {
-          throw new Error("Unable to load account deletion settings");
+          throw new Error("Unable to load legal document settings");
         }
 
         const pdfResponse = await fetch(pdfUrl, {
@@ -142,7 +158,7 @@ export default function AccountDeletionDocument() {
         });
 
         if (!pdfResponse.ok) {
-          throw new Error("Unable to load account deletion PDF");
+          throw new Error("Unable to load legal document PDF");
         }
 
         const pdfjs = await import("pdfjs-dist");
@@ -184,13 +200,14 @@ export default function AccountDeletionDocument() {
           pages.push(lines);
         }
 
-        const parsedPolicy = parsePolicyPages(pages);
+        const parsedPolicy = parsePdfPages(pages, title);
 
         if (!parsedPolicy) {
-          throw new Error("Unable to read account deletion PDF content");
+          throw new Error("Unable to read legal document PDF content");
         }
 
         setPolicy(parsedPolicy);
+        setUpdatedAt(settings.data?.updatedAt || "");
       } catch (error) {
         if (!(error instanceof Error && error.name === "AbortError")) {
           setHasError(true);
@@ -198,24 +215,27 @@ export default function AccountDeletionDocument() {
       }
     }
 
-    void loadAccountDeletionPolicy();
+    void loadLegalDocument();
 
     return () => controller.abort();
-  }, []);
+  }, [documentKey, title]);
 
   if (hasError) {
     return (
       <p className="rounded-2xl border border-[#E1EAEF] bg-white p-8 text-center text-[#52677C]">
-        The account deletion policy is currently unavailable. Please try again later.
+        This document is currently unavailable. Please try again later.
       </p>
     );
   }
 
   if (!policy) {
-    return <p className="py-16 text-center text-[#52677C]">Loading account deletion policy…</p>;
+    return <p className="py-16 text-center text-[#52677C]">Loading document...</p>;
   }
 
-  const navigationSections = policy.sections.map(({ id, title }) => [id, title]);
+  const navigationSections = policy.sections.map(({ id, title: sectionTitle }) => [
+    id,
+    sectionTitle,
+  ]);
 
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
@@ -223,10 +243,7 @@ export default function AccountDeletionDocument() {
         <p className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[#15977A]">
           On this page
         </p>
-        <PrivacyPolicyNav
-          sections={navigationSections}
-          ariaLabel="Account deletion sections"
-        />
+        <PrivacyPolicyNav sections={navigationSections} ariaLabel={`${title} sections`} />
       </aside>
 
       <article className="overflow-hidden rounded-2xl border border-[#E1EAEF] bg-white shadow-[0_18px_50px_rgba(27,58,87,0.07)]">
@@ -255,6 +272,17 @@ export default function AccountDeletionDocument() {
             </div>
           </section>
         ))}
+
+        {updatedAt ? (
+          <p className="border-t border-[#E8EEF2] px-6 py-5 text-xs font-medium text-[#718396] sm:px-10">
+            Last updated:{" "}
+            {new Date(updatedAt).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </p>
+        ) : null}
       </article>
     </div>
   );
