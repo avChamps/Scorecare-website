@@ -18,8 +18,10 @@ const navLinks = [
 ];
 
 const trustItems = [
-  "RBI Compliant",
-  "256-bit Encryption",
+  // "RBI Compliant",
+  // "256-bit Encryption",
+ "Secure Data",
+"Data Encrypted",
   "Real-time Score Updates",
   "Expert Credit Advisors",
   "Experian & CRIF High Mark",
