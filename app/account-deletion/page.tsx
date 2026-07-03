@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Account Deletion | ScoreCare",
   description: "Learn how to request deletion of your ScoreCare account and data.",
   alternates: {
-    canonical: "/account-deletion/",
+    canonical: "/account-deletion",
   },
 };
 

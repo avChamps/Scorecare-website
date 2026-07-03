@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Terms and Conditions | ScoreCare",
   description: "Terms and conditions for using ScoreCare services.",
   alternates: {
-    canonical: "/terms-and-conditions/",
+    canonical: "/terms-and-conditions",
   },
 };
 

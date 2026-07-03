@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   description:
     "Free credit score monitoring and personalised improvement plans by Scoresathi Technologies.",
   alternates: {
-    canonical: "/",
+    canonical: "https://scorecareapp.com/",
   },
   robots: {
     index: true,
