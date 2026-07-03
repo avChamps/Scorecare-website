@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Privacy Policy | ScoreCare",
   description:
     "Learn how ScoreCare collects, uses, stores, and protects your personal information.",
+  alternates: {
+    canonical: "/privacy-policy/",
+  },
 };
 
 export default function PrivacyPolicyPage() {

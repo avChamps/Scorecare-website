@@ -4,6 +4,9 @@ import LegalPageShell from "../legal-page-shell";
 export const metadata: Metadata = {
   title: "Account Deletion | ScoreCare",
   description: "Learn how to request deletion of your ScoreCare account and data.",
+  alternates: {
+    canonical: "/account-deletion/",
+  },
 };
 
 export default function AccountDeletionPage() {

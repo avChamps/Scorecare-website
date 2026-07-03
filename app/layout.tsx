@@ -21,9 +21,17 @@ const geistMono = Geist_Mono({
 const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://scorecareapp.com"),
   title: "ScoreCare - Know Your Score. Own Your Future.",
   description:
     "Free credit score monitoring and personalised improvement plans by Scoresathi Technologies.",
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
