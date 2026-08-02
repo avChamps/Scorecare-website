@@ -19,6 +19,11 @@ const legalLinks = [
   ["Account Deletion", "/account-deletion"],
 ];
 
+const appDownloadLinkProps = {
+  target: "_blank",
+  rel: "noopener noreferrer",
+};
+
 export default function LegalPageShell({
   documentKey,
   eyebrow,
@@ -56,6 +61,7 @@ export default function LegalPageShell({
         </div>
         <a
           href={PLAY_STORE_URL}
+          {...appDownloadLinkProps}
           className="hidden rounded-full bg-[#2EC4A0] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#20A882] sm:inline-flex"
         >
           Download App
@@ -81,6 +87,7 @@ export default function LegalPageShell({
               ))}
               <a
                 href={PLAY_STORE_URL}
+                {...appDownloadLinkProps}
                 className="mt-2 rounded-full bg-[#2EC4A0] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#20A882]"
               >
                 Download App
@@ -148,9 +155,15 @@ export default function LegalPageShell({
               <ul className="space-y-3 text-sm">
                 {(links as string[][]).map(([label, href]) => (
                   <li key={label}>
-                    <Link href={href} className="transition hover:text-[#2EC4A0]">
-                      {label}
-                    </Link>
+                    {href === PLAY_STORE_URL ? (
+                      <a href={href} {...appDownloadLinkProps} className="transition hover:text-[#2EC4A0]">
+                        {label}
+                      </a>
+                    ) : (
+                      <Link href={href} className="transition hover:text-[#2EC4A0]">
+                        {label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

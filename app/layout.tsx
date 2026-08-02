@@ -18,7 +18,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+const googleAnalyticsId = "G-YR04K22CHY";
+const googleAdsId = "AW-18267974947";
+const googleTagLoaderId = googleAnalyticsId;
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://scorecareapp.com"),
@@ -44,23 +46,26 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${manrope.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
-      {gaMeasurementId ? (
-        <>
+      <body className="min-h-full flex flex-col">
+        {children}
+        {googleTagLoaderId ? (
+          <>
           <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+            src={`https://www.googletagmanager.com/gtag/js?id=${googleTagLoaderId}`}
             strategy="afterInteractive"
           />
-          <Script id="google-analytics" strategy="afterInteractive">
+          <Script id="google-tag" strategy="afterInteractive">
             {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', '${gaMeasurementId}');
+              gtag('config', '${googleAnalyticsId}');
+              gtag('config', '${googleAdsId}');
             `}
           </Script>
-        </>
-      ) : null}
+          </>
+        ) : null}
+      </body>
     </html>
   );
 }
